@@ -15,13 +15,17 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                dir('order-ms') {
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $IMAGE_NAME ."
+                dir('order-ms') {
+                    sh "docker build -t $IMAGE_NAME ."
+                }
             }
         }
 
