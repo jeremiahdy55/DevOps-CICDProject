@@ -1,0 +1,8 @@
+com\order\ms\controller\OrderController.class
+com\order\ms\OrderMsApplication.class
+com\order\ms\service\ReverseOrder.class
+com\order\ms\entity\Order.class
+com\order\ms\entity\OrderRepository.class
+com\order\ms\dto\Payment.class
+com\order\ms\dto\OrderEvent.class
+com\order\ms\dto\CustomerOrder.class
