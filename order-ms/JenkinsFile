@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('docker_credentials')
+        IMAGE_NAME = 'jeremiahjava55/order-ms'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'github_credentials', url: 'https://github.com/jeremiahdy55/DevOps-CICDProject.git', branch: 'main'
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t $IMAGE_NAME ."
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                sh "echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin"
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh "docker push $IMAGE_NAME"
+            }
+        }
+    }
+}
