@@ -1,0 +1,6 @@
+com\delivery\ms\controller\DeliveryController.class
+com\delivery\ms\entity\DeliveryRepository.class
+com\delivery\ms\DeliveryMsApplication.class
+com\delivery\ms\entity\Delivery.class
+com\delivery\ms\dto\DeliveryEvent.class
+com\delivery\ms\dto\CustomerOrder.class
