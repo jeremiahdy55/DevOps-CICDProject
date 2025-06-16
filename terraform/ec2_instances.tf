@@ -106,8 +106,8 @@ resource "aws_instance" "kafka" {
               mkdir -p /opt/kafka
 
               # Download the Kafka zip, unzip the file, and move it to the kafka directory and add permissions
-              wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz
-              tar -xzf kafka_2.13-3.7.0.tgz -C /opt
+              wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz -O /tmp/kafka.tgz
+              tar -xzf /tmp/kafka.tgz -C /opt
               mv /opt/kafka_2.13-3.7.0 /opt/kafka
               chown -R kafka:kafka /opt/kafka
               
