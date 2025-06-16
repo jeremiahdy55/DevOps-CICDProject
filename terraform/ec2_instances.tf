@@ -17,6 +17,7 @@ resource "aws_instance" "microservice" {
   # Run these commands on creation
   user_data = <<-EOF
               #!/bin/bash
+              sleep 30
               sudo apt update -y
               sudo apt upgrade -y
               EOF
@@ -44,6 +45,8 @@ resource "aws_instance" "jenkins" {
   user_data = <<-EOF
               #!/bin/bash
               exec > /var/log/jenkins-data.log 2>&1 
+
+              sleep 30
 
               # System update
               sudo apt update -y
@@ -93,6 +96,8 @@ resource "aws_instance" "kafka" {
               #!/bin/bash
 
               exec > >(tee /tmp/user_data.log|logger -t user_data -s 2>/dev/console) 2>&1
+
+              sleep 30
 
               # Update system
               sudo apt update -y
