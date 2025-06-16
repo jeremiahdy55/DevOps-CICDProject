@@ -104,16 +104,13 @@ resource "aws_instance" "kafka" {
 
               # Create kafka user if not exists
               sudo id -u kafka &>/dev/null || sudo useradd -m -s /bin/bash kafka
- 
-              # Make kafka directory (named /opt) if not exists
-              mkdir -p /opt/kafka
 
               # Download the Kafka zip, unzip the file, and move it to the kafka directory and add permissions
-              sudo wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz -O /tmp/kafka.tgz
-              sudo tar -xzf /tmp/kafka.tgz -C /opt
-              sudo mv /opt/kafka_2.13-3.7.0 /opt/kafka
-              sudo chown -R kafka:kafka /opt/kafka
-              
+              sudo apt install -y wget curl
+              echo "Trying to download Kafka..." >> /tmp/user_data.log
+              sudo wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+              echo "Kafka download done" >> /tmp/user_data.log
+              sudo tar -xzf kafka_2.13-3.7.0.tgz              
 
               # Start Kafka Zookeeper as kafka user
               sudo -u kafka nohup /opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties > /tmp/zookeeper.log 2>&1 &
