@@ -1,0 +1,9 @@
+1. Have the microservice(s) code in the Github monorepo
+2. Create the terraform scripts.
+3. Create an EC2 instance for terraform to run on.
+4. Configure AWS credentials using command: "aws configure" in the terraform EC2 instance
+4a. *Need to use IAM roles to generate access key and secret access key*
+5. Upload the .tf scripts into the terraform EC2 instance, then run:
+5a. "terraform init"
+5b. "terraform plan"
+5c. "terraform apply"
