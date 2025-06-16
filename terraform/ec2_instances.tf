@@ -92,6 +92,8 @@ resource "aws_instance" "kafka" {
   user_data = <<-EOF
               #!/bin/bash
 
+              exec > >(tee /tmp/user_data.log|logger -t user_data -s 2>/dev/console) 2>&1
+
               # Update system
               sudo apt update -y
               sudo apt upgrade -y
