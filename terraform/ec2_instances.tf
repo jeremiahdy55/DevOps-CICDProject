@@ -55,17 +55,13 @@ resource "aws_instance" "jenkins" {
               # Install Java 17 for Jenkins to run
               sudo apt install -y openjdk-17-jdk
 
-               # Add Jenkins repo and import GPG key
-              curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
-                /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-
-              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-                https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-                /etc/apt/sources.list.d/jenkins.list > /dev/null
+              # Add Jenkins repo and import GPG key
+              curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
               # Install Jenkins
-              apt update -y
-              apt install -y jenkins
+              sudo apt update -y
+              sudo apt install -y jenkins
 
               # Enable and start Jenkins
               systemctl enable jenkins
@@ -83,71 +79,71 @@ resource "aws_instance" "jenkins" {
   ]
 }
 
-resource "aws_instance" "kafka" {
-  ami                         = var.ami_id
-  instance_type               = var.instance_type_medium
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.default.id]
-#   key_name                    = aws_key_pair.deployer.key_name
-  associate_public_ip_address = true
+# resource "aws_instance" "kafka" {
+#   ami                         = var.ami_id
+#   instance_type               = var.instance_type_medium
+#   subnet_id                   = aws_subnet.public.id
+#   vpc_security_group_ids      = [aws_security_group.default.id]
+# #   key_name                    = aws_key_pair.deployer.key_name
+#   associate_public_ip_address = true
 
-  # Run these commands on creation TODO fix me later
-  user_data = <<-EOF
-              #!/bin/bash
+#   # Run these commands on creation TODO fix me later
+#   user_data = <<-EOF
+#               #!/bin/bash
 
-              exec > >(tee /tmp/user_data.log|logger -t user_data -s 2>/dev/console) 2>&1
+#               exec > >(tee /tmp/user_data.log|logger -t user_data -s 2>/dev/console) 2>&1
 
-              sleep 30
+#               sleep 30
 
-              # Update system
-              sudo apt update -y
-              sudo apt upgrade -y
+#               # Update system
+#               sudo apt update -y
+#               sudo apt upgrade -y
 
-              # Install Java 17 for Jenkins to run
-              sudo apt install -y openjdk-17-jdk
+#               # Install Java 17 for Jenkins to run
+#               sudo apt install -y openjdk-17-jdk
 
-              # Create kafka user if not exists
-              sudo id -u kafka &>/dev/null || sudo useradd -m -s /bin/bash kafka
+#               # Create kafka user if not exists
+#               sudo id -u kafka &>/dev/null || sudo useradd -m -s /bin/bash kafka
  
-              # Make kafka directory (named /opt) if not exists
-              mkdir -p /opt/kafka
+#               # Make kafka directory (named /opt) if not exists
+#               mkdir -p /opt/kafka
 
-              # Download the Kafka zip, unzip the file, and move it to the kafka directory and add permissions
-              sudo wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz -O /tmp/kafka.tgz
-              sudo tar -xzf /tmp/kafka.tgz -C /opt
-              sudo mv /opt/kafka_2.13-3.7.0 /opt/kafka
-              sudo chown -R kafka:kafka /opt/kafka
+#               # Download the Kafka zip, unzip the file, and move it to the kafka directory and add permissions
+#               sudo wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz -O /tmp/kafka.tgz
+#               sudo tar -xzf /tmp/kafka.tgz -C /opt
+#               sudo mv /opt/kafka_2.13-3.7.0 /opt/kafka
+#               sudo chown -R kafka:kafka /opt/kafka
               
 
-              # Start Kafka Zookeeper as kafka user
-              sudo -u kafka nohup /opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties > /tmp/zookeeper.log 2>&1 &
+#               # Start Kafka Zookeeper as kafka user
+#               sudo -u kafka nohup /opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties > /tmp/zookeeper.log 2>&1 &
 
-              # Sleep for a bit to allow Zookeeper to start
-              sleep 20
+#               # Sleep for a bit to allow Zookeeper to start
+#               sleep 20
 
-              # Start Kafka Server as kafka user
-              sudo -u kafka nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &
+#               # Start Kafka Server as kafka user
+#               sudo -u kafka nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &
 
-              # Sleep for a bit to allow Kafka broker to start
-              sleep 20
+#               # Sleep for a bit to allow Kafka broker to start
+#               sleep 20
               
-              # Create the Kafka topics
-              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
-              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
-              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-orders --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
-              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-orders --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
-              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-payments --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
-              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-payments --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+#               # Create the Kafka topics
+#               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+#               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+#               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-orders --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+#               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-orders --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+#               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-payments --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+#               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-payments --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
 
-              EOF
+#               EOF
 
-  tags = {
-    Name = "Kafka-Server-fromTF"
-    Role = "kafka"
-  }
+#   tags = {
+#     Name = "Kafka-Server-fromTF"
+#     Role = "kafka"
+#   }
 
-  depends_on = [
-    aws_internet_gateway.igw,
-    aws_route_table_association.public_assoc
-  ]
-}
+#   depends_on = [
+#     aws_internet_gateway.igw,
+#     aws_route_table_association.public_assoc
+#   ]
+# }
