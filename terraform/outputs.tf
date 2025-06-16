@@ -7,7 +7,7 @@ output "kafka_public_ip" {
 }
 
 output "microservices_public_ips" {
-  value = { for key, ms in aws_instance.microservice : ms => value.public_ip }
+  value = { for key, value in aws_instance.microservice : key => value.public_ip }
 }
 
 output "vpc_id" {
