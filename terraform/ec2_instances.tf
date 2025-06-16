@@ -107,22 +107,24 @@ resource "aws_instance" "kafka" {
 
               # Download the Kafka zip, unzip the file, and move it to the kafka directory and add permissions
               sudo apt install -y wget curl
-              echo "Trying to download Kafka..." >> /tmp/user_data.log
-              sudo wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz
-              echo "Kafka download done" >> /tmp/user_data.log
-              sudo tar -xzf kafka_2.13-3.7.0.tgz              
+              sudo wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz -O /tmp/kafka.tgz
+              mkdir -p /opt/kafka
+              sudo tar -xzf /tmp/kafka.tgz -C /opt
+              sudo mv /opt/kafka_2.13-3.7.0/* /opt/kafka/
+              sudo rm -rf /opt/kafka_2.13-3.7.0
+              chown -R kafka:kafka /opt/kafka            
 
               # Start Kafka Zookeeper as kafka user
               sudo -u kafka nohup /opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties > /tmp/zookeeper.log 2>&1 &
 
               # Sleep for a bit to allow Zookeeper to start
-              sleep 20
+              sleep 30
 
               # Start Kafka Server as kafka user
               sudo -u kafka nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &
 
               # Sleep for a bit to allow Kafka broker to start
-              sleep 20
+              sleep 30
               
               # Create the Kafka topics
               sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
