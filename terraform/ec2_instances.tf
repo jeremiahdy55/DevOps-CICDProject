@@ -67,8 +67,6 @@ resource "aws_instance" "jenkins" {
               # Enable and start Jenkins
               systemctl enable jenkins
               systemctl start jenkins
-
-              sudo 
               EOF
 
   tags = {
@@ -93,8 +91,47 @@ resource "aws_instance" "kafka" {
   # Run these commands on creation TODO fix me later
   user_data = <<-EOF
               #!/bin/bash
+
+              # Update system
               sudo apt update -y
               sudo apt upgrade -y
+
+              # Install Java 17 for Jenkins to run
+              sudo apt install -y openjdk-17-jdk
+
+              # Create kafka user if not exists
+              sudo id -u kafka &>/dev/null || sudo useradd -m -s /bin/bash kafka
+ 
+              # Make kafka directory (named /opt) if not exists
+              mkdir -p /opt/kafka
+
+              # Download the Kafka zip, unzip the file, and move it to the kafka directory and add permissions
+              wget https://archive.apache.org/dist/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+              tar -xzf kafka_2.13-3.7.0.tgz -C /opt
+              mv /opt/kafka_2.13-3.7.0 /opt/kafka
+              chown -R kafka:kafka /opt/kafka
+              
+
+              # Start Kafka Zookeeper as kafka user
+              sudo -u kafka nohup /opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties > /tmp/zookeeper.log 2>&1 &
+
+              # Sleep for a bit to allow Zookeeper to start
+              sleep 20
+
+              # Start Kafka Server as kafka user
+              sudo -u kafka nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &
+
+              # Sleep for a bit to allow Kafka broker to start
+              sleep 20
+              
+              # Create the Kafka topics
+              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-stock --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-orders --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-orders --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic new-payments --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+              sudo -u kafka /opt/kafka/bin/kafka-topics.sh --create --topic reversed-payments --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+
               EOF
 
   tags = {
