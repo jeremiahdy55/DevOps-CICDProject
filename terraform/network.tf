@@ -18,6 +18,8 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name = "public-subnet"
+    "kubernetes.io/cluster/my-eks-cluster" = "shared"
+    "kubernetes.io/role/elb"               = "1"
   }
 }
 
@@ -29,7 +31,9 @@ resource "aws_subnet" "public_b" {
   availability_zone       = "us-west-2b"
 
   tags = {
-    Name = "public-subnet"
+    Name = "public-subnetb"
+    "kubernetes.io/cluster/my-eks-cluster" = "shared"
+    "kubernetes.io/role/elb"               = "1"
   }
 }
 

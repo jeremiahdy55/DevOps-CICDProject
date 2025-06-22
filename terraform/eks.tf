@@ -84,7 +84,13 @@ resource "aws_iam_role_policy_attachment" "nodegroup_AmazonEKS_CNI_Policy" {
 resource "aws_launch_template" "eks_worker_lt" {
   name_prefix   = "eks-worker-"
   image_id      = data.aws_ssm_parameter.eks_ami.value
-  instance_type = "t2.micro"
+  instance_type = "t2.medium"
+
+  user_data = base64encode(<<-EOF
+              #!/bin/bash
+              /etc/eks/bootstrap.sh ${aws_eks_cluster.eks_cluster.name} --kubelet-extra-args '--node-labels=eks.amazonaws.com/nodegroup=eks-node-group --register-with-taints='
+              EOF
+  )
 
   network_interfaces {
     security_groups = [aws_security_group.eks_nodes_sg.id]
