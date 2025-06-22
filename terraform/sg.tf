@@ -120,14 +120,6 @@ resource "aws_security_group" "eks_nodes_sg" {
   }
 
   ingress {
-    description       = "Node to node communication"
-    from_port         = 0
-    to_port           = 65535
-    protocol          = "tcp"
-    security_groups   = [aws_security_group.eks_nodes_sg.id]
-  }
-
-  ingress {
     from_port   = 8081
     to_port     = 8081
     protocol    = "tcp"
@@ -161,4 +153,14 @@ resource "aws_security_group" "eks_nodes_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "node_to_node" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_nodes_sg.id
+  source_security_group_id = aws_security_group.eks_nodes_sg.id
+  description              = "Allow worker nodes to communicate with each other"
 }
