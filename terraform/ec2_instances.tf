@@ -52,11 +52,8 @@ resource "aws_instance" "jenkins" {
               sudo apt update -y
               sudo apt upgrade -y
 
-              # Install Java 17 for Jenkins to run
-              sudo apt install -y openjdk-17-jdk
-
-              # Install Maven
-              sudo apt install -y maven
+              # Install Java 17 and Maven for Jenkins to run
+              sudo apt install -y openjdk-17-jdk maven
 
               # Install Docker
               sudo apt-get install -y docker.io
