@@ -82,7 +82,7 @@ resource "aws_iam_role_policy_attachment" "nodegroup_AmazonEKS_CNI_Policy" {
 
 resource "aws_launch_template" "eks_worker_lt" {
   name_prefix   = "eks-worker-"
-  image_id      = var.ami_id
+  image_id      = data.aws_ssm_parameter.eks_ami.value
   instance_type = "t2.micro"
 
   network_interfaces {
@@ -94,14 +94,14 @@ resource "aws_eks_node_group" "node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "eks-node-group"
   node_role_arn   = aws_iam_role.eks_nodegroup_role.arn
-  subnet_ids      = [aws_subnet.public.id]
+  subnet_ids      = [aws_subnet.public.id, aws_subnet.public_b.id] # must match parent cluster/conductor
 
   scaling_config {
     desired_size = 2
     max_size     = 4
     min_size     = 1
   }
-  
+
   launch_template {
     id      = aws_launch_template.eks_worker_lt.id
     version = "$Latest"
@@ -110,4 +110,8 @@ resource "aws_eks_node_group" "node_group" {
   depends_on = [
     aws_eks_cluster.eks_cluster,
   ]
+}
+
+data "aws_ssm_parameter" "eks_ami" {
+  name = "/aws/service/eks/optimized-ami/1.29/amazon-linux-2/recommended/image_id"
 }
