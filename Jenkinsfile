@@ -27,7 +27,7 @@ pipeline {
                 axes {
                     axis {
                         name: 'SERVICE'
-                        values: 'order-ms', 'delivery-ms', 'payment-ms', 'stock-ms'
+                        values: ['order-ms', 'delivery-ms', 'payment-ms', 'stock-ms']
                     }
                 }
 
