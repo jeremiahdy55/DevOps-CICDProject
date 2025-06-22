@@ -26,8 +26,8 @@ pipeline {
             matrix {
                 axes {
                     axis {
-                        name: 'SERVICE'
-                        values: ['order-ms', 'delivery-ms', 'payment-ms', 'stock-ms']
+                        name 'SERVICE'
+                        values 'order-ms', 'delivery-ms', 'payment-ms', 'stock-ms'
                     }
                 }
 
