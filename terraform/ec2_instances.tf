@@ -55,6 +55,14 @@ resource "aws_instance" "jenkins" {
               # Install Java 17 for Jenkins to run
               sudo apt install -y openjdk-17-jdk
 
+              # Install Maven
+              sudo apt install -y maven
+
+              # Install Docker
+              sudo apt-get install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+
               # Add Jenkins repo and import GPG key
               curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
               echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
@@ -63,9 +71,15 @@ resource "aws_instance" "jenkins" {
               sudo apt update -y
               sudo apt install -y jenkins
 
+              # Enable Jenkins to use Docker (*user:jenkins can use Docker)
+              sudo usermod -aG docker jenkins
+
               # Enable and start Jenkins
-              systemctl enable jenkins
-              systemctl start jenkins
+              sudo systemctl enable jenkins
+              sudo systemctl start jenkins
+
+              # Restart Jenkins just to make sure Jenkins can use Docker after (sudo usermod -aG docker jenkins)
+              sudo systemctl restart jenkins
               EOF
 
   tags = {
