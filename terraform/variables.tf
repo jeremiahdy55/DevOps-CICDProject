@@ -1,6 +1,6 @@
 variable "ami_id" {
   description = "Ubuntu Server 24.04 LTS (HVM),EBS General Purpose (SSD) Volume Type for us-west-1"
-  default     = "ami-014e30c8a36252ae5"
+  default     = "ami-05f991c49d264708f" # us-west-2 ubuntu image
 }
 
 variable "instance_type_micro" {
