@@ -9,6 +9,7 @@ data "aws_eks_cluster_auth" "cluster" {
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "my-eks-cluster"
   role_arn = aws_iam_role.eks_cluster_role.arn
+  version = "1.29"
 
   vpc_config {
     subnet_ids = [aws_subnet.public.id, aws_subnet.public_b.id]
