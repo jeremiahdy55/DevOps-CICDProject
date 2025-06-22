@@ -82,20 +82,22 @@ resource "aws_security_group" "eks_cluster_sg" {
   name        = "eks-cluster-sg"
   vpc_id      = aws_vpc.main.id
 
-  ingress {
-    description      = "Allow worker nodes to communicate with EKS API"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.eks_nodes_sg.id]  # node group SG
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "eks_cluster_from_nodes" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_cluster_sg.id
+  source_security_group_id = aws_security_group.eks_nodes_sg.id
+  description              = "Allow worker nodes to communicate with EKS API"
 }
 
 resource "aws_security_group" "eks_nodes_sg" {
