@@ -26,10 +26,10 @@ WORKDIR /app
 RUN mkdir /app/logs
 
 # Copy the packaged jar file from the build stage
-COPY --from=build /app/target/order-ms-0.0.1-SNAPSHOT.jar /app/order-ms-0.0.1-SNAPSHOT.jar
+COPY --from=build /app/target/delivery-ms-0.0.1-SNAPSHOT.jar /app/delivery-ms-0.0.1-SNAPSHOT.jar
 
 # Expose the application port
-EXPOSE 8084
+EXPOSE 8083
 
 # Run the application
-CMD ["sh","-c","java -jar order-ms-0.0.1-SNAPSHOT.jar > /app/logs/app.log 2>&1"]
+CMD ["sh","-c","java -jar delivery-ms-0.0.1-SNAPSHOT.jar > /app/logs/app.log 2>&1"]
