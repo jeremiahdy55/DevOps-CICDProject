@@ -1,37 +1,4 @@
-## Define the ec2 instances to be provisioned by terraform: ms instances, Jenkins instance, Kafka instance
-
-locals {
-  microservices = ["delivery-ms", "order-ms", "payment-ms", "stock-ms"]
-}
-
-resource "aws_instance" "microservice" {
-  for_each = toset(local.microservices)
-
-  ami                         = var.ami_id
-  instance_type               = var.instance_type_micro
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.default.id]
-#   key_name                    = aws_key_pair.deployer.key_name
-  associate_public_ip_address = true
-
-  # Run these commands on creation
-  user_data = <<-EOF
-              #!/bin/bash
-              sleep 30
-              sudo apt update -y
-              sudo apt upgrade -y
-              EOF
-
-  tags = {
-    Name = each.key
-    Role = "microservice"
-  }
-
-  depends_on = [
-    aws_internet_gateway.igw,
-    aws_route_table_association.public_assoc
-  ]
-}
+## Define the ec2 instances to be provisioned by terraform: Jenkins instance, Kafka instance, EKS cluster
 
 resource "aws_instance" "jenkins" {
   ami                         = var.ami_id
@@ -40,25 +7,43 @@ resource "aws_instance" "jenkins" {
   vpc_security_group_ids      = [aws_security_group.default.id]
 #   key_name                    = aws_key_pair.deployer.key_name
   associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.jenkins_profile.name
 
-  # Run these commands on creation TODO fix me later
+  # Run these commands on creation
   user_data = <<-EOF
               #!/bin/bash
-              exec > /var/log/jenkins-data.log 2>&1 
 
               sleep 30
+
+              exec > /var/log/jenkins-data.log 2>&1 
 
               # System update
               sudo apt update -y
               sudo apt upgrade -y
 
-              # Install Java 17 and Maven for Jenkins to run
-              sudo apt install -y openjdk-17-jdk maven
+              # Install Java 17, Maven, unzip, and Docker for Jenkins to run (Git is also here just in case)
+              sudo apt install -y openjdk-17-jdk maven unzip docker.io git gnupg software-properties-common curl
 
-              # Install Docker
-              sudo apt-get install -y docker.io
+              # Start Docker
               sudo systemctl start docker
               sudo systemctl enable docker
+
+              # Install Terraform
+              curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+              echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+              sudo apt update -y
+              sudo apt install -y terraform
+
+              # Install kubectl
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+              sudo chmod +x kubectl
+              sudo mv kubectl /usr/local/bin/
+
+              # Install AWS CLI
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+              sudo rm -rf awscliv2.zip aws/
 
               # Add Jenkins repo and import GPG key
               curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
@@ -76,6 +61,7 @@ resource "aws_instance" "jenkins" {
               sudo systemctl start jenkins
 
               # Restart Jenkins just to make sure Jenkins can use Docker after (sudo usermod -aG docker jenkins)
+              sleep 30
               sudo systemctl restart jenkins
               EOF
 
@@ -83,6 +69,12 @@ resource "aws_instance" "jenkins" {
     Name = "Jenkins-Server-fromTF"
     Role = "jenkins"
   }
+
+  root_block_device {
+    volume_size = 24   # 24 GB Storage
+    volume_type = "gp3"
+  }
+
 
   depends_on = [
     aws_internet_gateway.igw,
@@ -98,7 +90,7 @@ resource "aws_instance" "kafka" {
 #   key_name                    = aws_key_pair.deployer.key_name
   associate_public_ip_address = true
 
-  # Run these commands on creation TODO fix me later
+  # Run these commands on creation
   user_data = <<-EOF
               #!/bin/bash
 
@@ -152,8 +144,48 @@ resource "aws_instance" "kafka" {
     Role = "kafka"
   }
 
+  root_block_device {
+    volume_size = 24 # 24 GB Storage
+    volume_type = "gp3"
+  }
+
   depends_on = [
     aws_internet_gateway.igw,
     aws_route_table_association.public_assoc
   ]
 }
+
+
+# Previous code to provision ec2 instances for microservices, moved this responsibility to EKS cluster
+# locals {
+#   microservices = ["delivery-ms", "order-ms", "payment-ms", "stock-ms"]
+# }
+
+# resource "aws_instance" "microservice" {
+#   for_each = toset(local.microservices)
+
+#   ami                         = var.ami_id
+#   instance_type               = var.instance_type_micro
+#   subnet_id                   = aws_subnet.public.id
+#   vpc_security_group_ids      = [aws_security_group.default.id]
+# #   key_name                    = aws_key_pair.deployer.key_name
+#   associate_public_ip_address = true
+
+#   # Run these commands on creation
+#   user_data = <<-EOF
+#               #!/bin/bash
+#               sleep 30
+#               sudo apt update -y
+#               sudo apt upgrade -y
+#               EOF
+
+#   tags = {
+#     Name = each.key
+#     Role = "microservice"
+#   }
+
+#   depends_on = [
+#     aws_internet_gateway.igw,
+#     aws_route_table_association.public_assoc
+#   ]
+# }

@@ -20,6 +20,26 @@
 7f. GITHUB - password: Insert Github hub personal access token
 7g. GITHUB - ID: variable name for Jenkins to access this information in scripts and jobs
 
+8. Configure Jenkins Pipeline
+8a. Dashboard > new Item > Pipeline
+8b. Select any triggers you want (GitHub hook trigger for this project)
+8c. In PIPELINE section, select (Pipeline script from SCM)
+8d. SCM : "Git"
+8e. Repository URL: github repo URL
+8f. Credentials: (Select from the dropdown menu the Github credentials set up in step 7)
+8g. Specify which branch to use (usually */main)
+8h. Specify Jenkinsfile path (usually keep it in root directory, so just "Jenkinsfile")
+
+9. Configure Github's side of the Github Webhook for Jenkins
+9a. Go to project repo
+9b. Settings > Webhooks > Add Webhook
+9c. Navigate Jenkins (Manage Jenkins > System > Github Section, click on ? next to Github Servers)
+9d. Copy webhook URL from Jenkins and paste in Github Webhook Payload URL
+9e. Set content type to application/json
+9f. Select "just the push event"
+9g. Save webhook
+
+
 
 
 
@@ -47,3 +67,5 @@ insert access key
 insert secret key
 use region available
 leave default output blank
+
+

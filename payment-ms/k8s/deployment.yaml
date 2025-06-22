@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-ms-deployment
+  labels:
+    app: payment-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-ms
+  template:
+    metadata:
+      labels:
+        app: payment-ms
+    spec:
+      containers:
+      - name: payment-ms-container
+        image: jeremiahjava55/payment-ms:latest
+        ports:
+        - containerPort: 8081
+        
+        # Optional resource limits
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"

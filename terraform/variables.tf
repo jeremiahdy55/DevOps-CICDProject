@@ -10,13 +10,3 @@ variable "instance_type_micro" {
 variable "instance_type_medium" {
   default = "t2.medium"
 }
-
-# variable "vpc_id" {
-#   description = "VPC to deploy instances in"
-#   default     = "" # Fill after VPC setup
-# }
-
-# variable "subnet_id" {
-#   description = "Subnet ID for instances"
-#   default     = "" # Fill after VPC setup
-# }

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-ms-deployment
+  labels:
+    app: stock-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-ms
+  template:
+    metadata:
+      labels:
+        app: stock-ms
+    spec:
+      containers:
+      - name: stock-ms-container
+        image: jeremiahjava55/stock-ms:latest
+        ports:
+        - containerPort: 8082
+        
+        # Optional resource limits
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"

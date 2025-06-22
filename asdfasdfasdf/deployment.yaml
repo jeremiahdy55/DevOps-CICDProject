@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-ms-deployment
+  labels:
+    app: order-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-ms
+  template:
+    metadata:
+      labels:
+        app: order-ms
+    spec:
+      containers:
+      - name: order-ms-container
+        image: jeremiahjava55/order-ms:latest
+        ports:
+        - containerPort: 8084
+        
+        # Optional resource limits
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
