@@ -134,8 +134,10 @@ Name your pipeline (used for Jenkins job identification purposes only, no real b
 
 ## 3. Build and Deploy Microservices
 
-Trigger the Jenkins pipeline that was just made manually (*Build Now*) or via configured triggers.
-
+Trigger the Jenkins pipeline that was just made:
+- Manually (*Build Now*)
+- Via configured triggers
+This will build the Docker images, push them to Docker Hub, then pull those images to deploy to EKS worker nodes.
 
 ---
 
