@@ -23,7 +23,7 @@ resource "aws_s3_bucket_policy" "ci_config_bucket_policy" {
         Sid: "AllowJenkinsInstanceProfileAccess",
         Effect: "Allow",
         Principal: {
-          AWS: [aws_iam_instance_profile.jenkins_profile.arn]
+          AWS: [aws_iam_role.jenkins_role.arn]
         },
         Action: [
           "s3:GetObject",
