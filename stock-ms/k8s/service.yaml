@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: payment-ms-service
+  name: stock-ms-service
 spec:
   type: LoadBalancer
   selector:
