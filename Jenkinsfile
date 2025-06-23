@@ -4,7 +4,6 @@ pipeline {
     environment {
         GIT_CREDENTIALS = 'github_credentials'
         REPO_URL        = 'https://github.com/jeremiahdy55/DevOps-CICDProject.git' // Github project monorepo
-        S3_BUCKET       = "${env.S3_BUCKET}" // pulled from /etc/environment
         CLUSTER_NAME    = 'my-eks-cluster' // hard-coded, make sure this matches whatever is in terraform scripts
         AWS_REGION      = 'us-west-2' // hard-coded, make sure this matches whatever is in terraform scripts
     }
@@ -18,6 +17,16 @@ pipeline {
     // }
 
     stages {
+        stage('Load S3 bucket name from /etc/environment') {
+            steps {
+                script {
+                    def s3Bucket = sh(script: "grep '^S3_BUCKET=' /etc/environment | cut -d '=' -f2", returnStdout: true).trim()
+                    env.S3_BUCKET = s3Bucket
+                    echo "Loaded S3_BUCKET from /etc/environment: ${env.S3_BUCKET}"
+                }
+            }
+        }
+        
         stage('Checkout') {
             steps {
                 git credentialsId: "${env.GIT_CREDENTIALS}", url: "${env.REPO_URL}", branch: 'main'
