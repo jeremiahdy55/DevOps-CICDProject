@@ -26,15 +26,14 @@ sudo apt install -y terraform
 ---
 
 ### Install AWS CLI
-
+First, manually enter `sudo su`. Then enter in the following commands:
 ```bash
-sudo su
 sudo apt install unzip -y
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
-exit
 ```
+Lastly, `exit` from the root user.
 
 ---
 
