@@ -120,7 +120,7 @@ pipeline {
                     dir("${svc}/k8s") {
                         sh "kubectl apply -f deployment.yaml"
                         sh "kubectl apply -f service.yaml"
-                        sh "kubectl rollout status deployment/${svc} || true"
+                        sh "kubectl rollout status deployment/${svc}-deployment || true"
                     }
                 }
             }
