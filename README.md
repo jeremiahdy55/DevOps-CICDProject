@@ -152,6 +152,22 @@ Once deployed, to access microservices running on EKS worker nodes.
 
 ---
 
+### Project Destruction
+
+Connect to Jenkins instance and run:
+```bash
+kubectl delete svc --all
+kubectl delete deployments --all
+```
+This stops all services and deployments, ensures load balancers and elastic network interfaces (ENI) are torn down, and removes lingering artifacts that might mess with `terraform destroy`.
+
+Next, connect to terraform instance and run:
+```bash
+cd DevOps-CICDProject/terraform
+terraform destroy -auto-approve
+```
+This will usually take a while, so feel free to grab a coffee :coffee:!
+
 ### Summary
 
 - Terraform provisions EC2 instances and configures Jenkins and Kafka on them
