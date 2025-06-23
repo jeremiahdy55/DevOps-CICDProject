@@ -164,3 +164,13 @@ resource "aws_security_group_rule" "node_to_node" {
   source_security_group_id = aws_security_group.eks_nodes_sg.id
   description              = "Allow worker nodes to communicate with each other"
 }
+
+resource "aws_security_group_rule" "jenkins_to_eks_api" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_cluster_sg.id
+  source_security_group_id = aws_security_group.default.id # Allow Default security group (Kafka, Jenkins) to access EKS
+  description              = "Allow Jenkins to access EKS API"
+}
