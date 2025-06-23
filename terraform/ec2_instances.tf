@@ -1,5 +1,4 @@
-## Define the ec2 instances to be provisioned by terraform: Jenkins instance, Kafka instance, EKS cluster
-
+## Define the ec2 instances to be provisioned by terraform: Jenkins instance, Kafka instance
 resource "aws_instance" "jenkins" {
   ami                         = var.ami_id
   instance_type               = var.instance_type_medium
@@ -56,6 +55,9 @@ resource "aws_instance" "jenkins" {
               # Enable Jenkins to use Docker (*user:jenkins can use Docker)
               sudo usermod -aG docker jenkins
 
+              # Add S3_bukcet file name as environment variable
+              echo "S3_BUCKET=${aws_s3_bucket.ci_config_bucket.bucket}" | sudo tee -a /etc/environment
+
               # Enable and start Jenkins
               sudo systemctl enable jenkins
               sudo systemctl start jenkins
@@ -75,10 +77,10 @@ resource "aws_instance" "jenkins" {
     volume_type = "gp3"
   }
 
-
   depends_on = [
     aws_internet_gateway.igw,
-    aws_route_table_association.public_assoc
+    aws_route_table_association.public_assoc,
+    aws_s3_bucket.ci_config_bucket
   ]
 }
 

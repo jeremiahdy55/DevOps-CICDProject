@@ -4,6 +4,9 @@ pipeline {
     environment {
         GIT_CREDENTIALS = 'github_credentials'
         REPO_URL        = 'https://github.com/jeremiahdy55/DevOps-CICDProject.git' // Github project monorepo
+        S3_BUCKET       = "${env.S3_BUCKET}" // pulled from /etc/environment
+        CLUSTER_NAME    = 'my-eks-cluster' // hard-coded, make sure this matches whatever is in terraform scripts
+        AWS_REGION      = 'us-west-2' // hard-coded, make sure this matches whatever is in terraform scripts
     }
 
     // **tools** must be setup in Jenkins-Tools config
@@ -32,10 +35,25 @@ pipeline {
                 }
 
                 stages {
+                    stage('Inject Kafka IP') {
+                        steps {
+                            dir("${SERVICE}") {
+                               sh """
+                                # Fetch Kafka IP from S3
+                                aws s3 cp s3://$S3_BUCKET/kafka_ip.txt kafka_ip.txt
+                                KAFKA_IP=\$(cat kafka_ip.txt)
+
+                                # Inject into application.properties
+                                sed -i "s/^spring.kafka.bootstrap-servers=.*/spring.kafka.bootstrap-servers=\${KAFKA_IP}:9092/" src/main/resources/application.properties
+                               """
+                            }
+                        }
+                    }
+
                     stage('Build JAR') {
                         steps {
                             dir("${SERVICE}") {
-                                sh 'mvn clean package -DskipTests'
+                               sh  'mvn clean package -DskipTests'
                             }
                         }
                     }
@@ -77,10 +95,30 @@ pipeline {
 
     post {
         success {
-            echo 'All microservices built and pushed successfully!'
+            echo 'All microservices built and pushed successfully! Proceeding to deploy to EKS.'
+
+            script {
+                // Configure kubectl
+                sh """
+                    set -e
+                    aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
+                    kubectl get nodes
+                """
+
+                // Loop through services and deploy
+                def services = ['order-ms', 'delivery-ms', 'payment-ms', 'stock-ms']
+                services.each { svc ->
+                    dir("${svc}/k8s") {
+                        sh "kubectl apply -f deployment.yaml"
+                        sh "kubectl apply -f service.yaml"
+                        sh "kubectl rollout status deployment/${svc} || true"
+                    }
+                }
+            }
         }
+
         failure {
-            echo 'Pipeline failed.'
+            echo 'Pipeline failed before deployment.'
         }
     }
 }
